@@ -25,7 +25,10 @@ def _seq_len(data):
   mask = tf.cast(mask, tf.int32)
   return tf.reduce_sum(mask, 1), mask
 
-def build_lm(text_inputs, num_symbols, cond):
+def build_lm(text_inputs, num_symbols, cond, seq_len=None):
+  if seq_len is None:
+    seq_len = _seq_len(text_inputs)[0]
+
   cell = tf.nn.rnn_cell.GRUCell(RNN_SIZE)
 
   with tf.variable_scope("rnn_inputs"):
@@ -34,10 +37,16 @@ def build_lm(text_inputs, num_symbols, cond):
     rnn_inputs = tf.nn.embedding_lookup(embedding, text_inputs)
 
   with tf.variable_scope("decoder"):
-    output, state = tf.nn.dynamic_rnn(cell, rnn_inputs,
-        initial_state = cond,
-        dtype=tf.float32,
-        sequence_length=_seq_len(text_inputs)[0])
+    if seq_len == 1:
+      with tf.variable_scope("RNN"):
+        # hacky. RNN comes from the rnn.py code
+        rnn_inputs = tf.reshape(rnn_inputs, [-1, RNN_SIZE])
+        output, state = cell(rnn_inputs, cond)
+    else:
+      output, state = tf.nn.dynamic_rnn(cell, rnn_inputs,
+          initial_state = cond,
+          dtype=tf.float32,
+          sequence_length=seq_len)
 
   with tf.variable_scope("outputs"):
     w = tf.get_variable("proj_w", [RNN_SIZE, num_symbols])

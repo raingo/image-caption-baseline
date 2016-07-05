@@ -10,13 +10,62 @@ __author__ = "Raingo Lee (raingomm@gmail.com)"
 import sys
 import os.path as osp
 import tensorflow as tf
-from lm import lm_loss, build_sampler, MAX_GRADIENT_NORM
+from lm import lm_loss, build_lm, MAX_GRADIENT_NORM, RNN_SIZE, MAX_SEQ_LEN, build_sampler
 from cnn import encode_image
-from gen_vocab import load_vocab, EOS, print_text
+from gen_vocab import load_vocab, EOS, print_text, BOS
 from coco_inputs import inputs
 from time import gmtime, strftime
+import numpy as np
 
 LEARNING_RATE = 1e-3
+
+def _lm_sampler(images, num_symbols, batch_size, paths_):
+  cnn = encode_image(images)
+  samples = build_sampler(num_symbols, cnn, batch_size)
+
+  def sample(sess):
+    samples_, _paths = sess.run([samples, paths_])
+    return samples_, _paths
+
+  return sample
+
+def _cnn_sampler(images, num_symbols, batch_size, paths_):
+  cnn = encode_image(images)
+
+  prev_state = tf.placeholder(tf.float32, [None, RNN_SIZE])
+  prev_symbol = tf.placeholder(tf.int32, [None, 1])
+
+  one_step = build_lm(prev_symbol, num_symbols,
+      prev_state, seq_len=1)
+
+  initial_text = np.ones([batch_size,1], dtype=np.int32) * BOS
+
+  def sample(sess):
+    _cnn, _paths = sess.run([cnn, paths_])
+    prev = _cnn
+    text = initial_text
+    texts = []
+    mask = np.zeros(batch_size, dtype=bool)
+
+    for step in range(MAX_SEQ_LEN):
+      logits, prev = sess.run(one_step,
+          feed_dict={
+            prev_state:prev,
+            prev_symbol:text})
+      text = np.argmax(logits, 1)
+      text = np.expand_dims(text, 1)
+      texts.append(text)
+
+      mask = np.logical_or(mask, text == EOS)
+      if mask.all():
+        if step > 20:
+          print("Long step encounted:", step)
+        break
+
+    texts = np.concatenate(texts, axis=1)
+    return texts, _paths
+
+  return sample
 
 def image2text(images, captions, num_symbols):
   cnn = encode_image(images)
@@ -52,8 +101,7 @@ def main():
       loss = image2text(images, captions, num_symbols)
 
     with tf.variable_scope("im2txt", reuse=True):
-      cnn = encode_image(images)
-      samples = build_sampler(num_symbols, cnn, batch_size)
+      sampler = _cnn_sampler(images, num_symbols, batch_size, coco_ids)
 
     params = tf.trainable_variables()
     opt = tf.train.AdamOptimizer(LEARNING_RATE)
@@ -85,7 +133,7 @@ def main():
     start = global_step.eval(session=sess)
 
     def _eval(output=sys.stdout):
-      samples_, paths_ = sess.run([samples, coco_ids])
+      samples_, paths_ = sampler(sess)
       print_text(samples_, i2w, paths_, file=output)
 
     def train():
@@ -108,8 +156,9 @@ def main():
           cnt = 0
           while not coord.should_stop():
             _eval(writer)
+            if cnt % 10 == 0:
+              print(cnt)
             cnt += 1
-            print(cnt)
       except tf.errors.OutOfRangeError:
         print('finish eval')
 
