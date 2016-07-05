@@ -56,7 +56,7 @@ def main():
         zip(clipped_gradients, params), global_step=global_step)
 
     # Create a saver.
-    saver = tf.train.Saver(tf.all_variables(), write_meta_graph=False)
+    saver = tf.train.Saver(tf.all_variables())
 
     init_op = tf.initialize_all_variables()
     sess.run(init_op)
@@ -70,7 +70,7 @@ def main():
 
     for i in range(max_iters):
       if i % 1000 == 0:
-        saver.save(sess, ckpt_path)
+        saver.save(sess, ckpt_path, write_meta_graph=False)
         samples_ = sess.run([samples])[0]
         print("samples at iteration", i)
         for sample in samples_:
