@@ -151,8 +151,11 @@ def main():
           print(i, max_iters, _loss, strftime("%Y-%m-%d %H:%M:%S", gmtime()))
 
     def eval():
+      save_path = eval_save_path + '-%d' % start
+      if osp.exists(save_path):
+        return
       try:
-        with open(eval_save_path + '-%d' % start, 'w') as writer:
+        with open(save_path, 'w') as writer:
           cnt = 0
           while not coord.should_stop():
             _eval(writer)
@@ -167,9 +170,9 @@ def main():
     else:
       eval()
 
-    #coord.request_stop()
-    #coord.join(threads)
-    #sess.close()
+    coord.request_stop()
+    coord.join(threads)
+    sess.close()
 
 
 if __name__ == "__main__":
