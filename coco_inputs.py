@@ -52,10 +52,10 @@ def _parse_example_proto(example_serialized):
   caption_tids = tf.decode_csv(caption, record_defaults)
   caption_tids = tf.pack(caption_tids)
 
-  return image, caption_tids #, image_path
+  return image, caption_tids, cocoid #, image_path
 
-def inputs(tf_dir, is_train, batch_size):
-  image, caption_tids = records(tf_dir)
+def inputs(tf_dir, is_train, batch_size, num_epochs=None):
+  image, caption_tids, cocoid = records(tf_dir, num_epochs)
 
   reshaped_image = tf.image.resize_images(image, IM_S, IM_S)
 
@@ -76,7 +76,7 @@ def inputs(tf_dir, is_train, batch_size):
   num_preprocess_threads = 4
   min_queue_examples = 20
 
-  outputs = [image, caption_tids]
+  outputs = [image, caption_tids, cocoid]
 
   return tf.train.shuffle_batch(
       outputs,
@@ -85,10 +85,10 @@ def inputs(tf_dir, is_train, batch_size):
       capacity=min_queue_examples + 3 * batch_size,
       min_after_dequeue=min_queue_examples)
 
-def records(tf_dir):
+def records(tf_dir, num_epochs):
   import glob
   files = glob.glob(osp.join(tf_dir, 'tf*'))
-  filename_queue = tf.train.string_input_producer(files)
+  filename_queue = tf.train.string_input_producer(files, num_epochs=num_epochs)
 
   reader = tf.TFRecordReader()
   _, example_serialized = reader.read(filename_queue)

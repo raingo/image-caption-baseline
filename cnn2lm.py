@@ -28,6 +28,13 @@ def main():
   vocab_path = sys.argv[2]
   ckpt_path = sys.argv[3]
 
+  do_train = True
+  try:
+    eval_save_path = sys.argv[4]
+    do_train = eval_save_path == 'train'
+  except:
+    pass
+
   batch_size = 32
 
   _, i2w = load_vocab(vocab_path)
@@ -35,7 +42,11 @@ def main():
   print('num_symbols:', num_symbols)
   with tf.Graph().as_default():
     sess = tf.Session()
-    images, captions = inputs(data_dir, True, batch_size)
+    with tf.device('/cpu:0'):
+      images, captions, coco_ids = inputs(data_dir,
+          do_train,
+          batch_size,
+          None if do_train else 2)
 
     with tf.variable_scope("im2txt"):
       loss = image2text(images, captions, num_symbols)
@@ -58,7 +69,9 @@ def main():
     # Create a saver.
     saver = tf.train.Saver(tf.all_variables())
 
-    init_op = tf.initialize_all_variables()
+    init_op = tf.group(tf.initialize_all_variables(),
+                  tf.initialize_local_variables())
+
     sess.run(init_op)
 
     coord = tf.train.Coordinator()
@@ -70,19 +83,45 @@ def main():
       saver.restore(sess, ckpt_path)
 
     start = global_step.eval(session=sess)
-    max_iters = 8000 * 20
 
-    for i in range(start, max_iters):
-      if i % 1000 == 0:
-        saver.save(sess, ckpt_path, write_meta_graph=False)
-        samples_ = sess.run([samples])[0]
-        print("samples at iteration", i)
-        print_text(samples_, i2w)
+    def _eval(output=sys.stdout):
+      samples_, paths_ = sess.run([samples, coco_ids])
+      print_text(samples_, i2w, paths_, file=output)
 
-      _loss = sess.run([train_op, loss])[1]
+    def train():
+      max_iters = 8000 * 20
 
-      if i % 100 == 0:
-        print(i, max_iters, _loss, strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+      for i in range(start, max_iters):
+        if i % 1000 == 0:
+          saver.save(sess, ckpt_path, write_meta_graph=False)
+          print("samples at iteration", i)
+          _eval()
+
+        _loss = sess.run([train_op, loss])[1]
+
+        if i % 100 == 0:
+          print(i, max_iters, _loss, strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+
+    def eval():
+      try:
+        with open(eval_save_path + '-%d' % start, 'w') as writer:
+          cnt = 0
+          while not coord.should_stop():
+            _eval(writer)
+            cnt += 1
+            print(cnt)
+      except tf.errors.OutOfRangeError:
+        print('finish eval')
+
+    if do_train:
+      train()
+    else:
+      eval()
+
+    #coord.request_stop()
+    #coord.join(threads)
+    #sess.close()
+
 
 if __name__ == "__main__":
   main()
