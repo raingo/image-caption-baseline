@@ -14,6 +14,7 @@ from lm import lm_loss, build_sampler, MAX_GRADIENT_NORM
 from cnn import encode_image
 from gen_vocab import load_vocab, EOS
 from coco_inputs import inputs
+from time import gmtime, strftime
 
 LEARNING_RATE = 1e-3
 
@@ -27,18 +28,19 @@ def main():
   vocab_path = sys.argv[2]
   ckpt_path = sys.argv[3]
 
+  batch_size = 32
+
   _, i2w = load_vocab(vocab_path)
   num_symbols = len(i2w)
   print('num_symbols:', num_symbols)
   with tf.Graph().as_default():
     sess = tf.Session()
-    images, captions = inputs(data_dir, True, 10)
+    images, captions = inputs(data_dir, True, batch_size)
 
     with tf.variable_scope("im2txt"):
       loss = image2text(images, captions, num_symbols)
 
     with tf.variable_scope("im2txt", reuse=True):
-      batch_size = 10
       cnn = encode_image(images)
       samples = build_sampler(num_symbols, cnn, batch_size)
 
@@ -62,8 +64,10 @@ def main():
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-    for i in range(10000):
-      if i % 100 == 0:
+    max_iters = 8000 * 20
+
+    for i in range(max_iters):
+      if i % 1000 == 0:
         saver.save(sess, ckpt_path)
         samples_ = sess.run([samples])[0]
         print("samples at iteration", i)
@@ -75,7 +79,10 @@ def main():
             tokens.append(i2w[ii])
           print(" ", ' '.join(tokens))
 
-      print(i, sess.run([train_op, loss])[1])
+      _loss = sess.run([train_op, loss])[1]
+
+      if i % 100 == 0:
+        print(i, max_iters, _loss, strftime("%Y-%m-%d %H:%M:%S", gmtime()))
 
 if __name__ == "__main__":
   main()
