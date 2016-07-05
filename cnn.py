@@ -33,7 +33,8 @@ def encode_image(images):
   name = 'cnn'
   tf.import_graph_def(graph_def, name = name, input_map={input_name:images})
   graph = tf.get_default_graph()
-  output_node = graph.get_tensor_by_name(name+'/'+output_name+':0')
+  with tf.variable_scope("cnn") as vs:
+    output_node = graph.get_tensor_by_name(vs.name + '/' + output_name+':0')
 
   with tf.variable_scope('cnn2rnn'):
     output_node = tf.reshape(output_node, [-1, cnn_dim])
