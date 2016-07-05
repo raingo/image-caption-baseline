@@ -25,6 +25,7 @@ from gen_vocab import load_vocab, tokenize, PAD, BOS, EOS, UNK
 import random
 import tensorflow as tf
 import threading
+from time import gmtime, strftime
 
 NUM_PER_SHARDS = 2000
 NUM_THREADS = 4
@@ -94,7 +95,7 @@ def _process_threads(tid, num_threads, data, save_dir, w2i, name='tf'):
       writer = tf.python_io.TFRecordWriter(output_file)
 
       if tid == 0:
-        print(cnt, tid, idx, len(data))
+        print(cnt, tid, idx, len(data), strftime("%Y-%m-%d %H:%M:%S", gmtime()))
 
     fields = data[idx]
     image_id = int(fields[0])
