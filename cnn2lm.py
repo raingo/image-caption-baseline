@@ -10,10 +10,12 @@ __author__ = "Raingo Lee (raingomm@gmail.com)"
 import sys
 import os.path as osp
 import tensorflow as tf
-from lm import lm_loss, build_sampler, LEARNING_RATE, MAX_GRADIENT_NORM
+from lm import lm_loss, build_sampler, MAX_GRADIENT_NORM
 from cnn import encode_image
 from gen_vocab import load_vocab, EOS
 from coco_inputs import inputs
+
+LEARNING_RATE = 1e-3
 
 def image2text(images, captions, num_symbols):
   cnn = encode_image(images)
