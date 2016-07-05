@@ -156,8 +156,8 @@ def main():
           cnt = 0
           while not coord.should_stop():
             _eval(writer)
-            if cnt % 10 == 0:
-              print(cnt)
+            if cnt % 100 == 0:
+              print(cnt, strftime("%Y-%m-%d %H:%M:%S", gmtime()))
             cnt += 1
       except tf.errors.OutOfRangeError:
         print('finish eval')
