@@ -50,6 +50,23 @@ def _bytes_feature(value):
     value = [value]
   return tf.train.Feature(bytes_list=tf.train.BytesList(value=value))
 
+import imghdr
+from cStringIO import StringIO
+import PIL
+
+def _ensure_jpeg(path):
+  image_buffer = tf.gfile.FastGFile(path, 'r')
+
+  if imghdr.what(image_buffer) != 'jpeg':
+    img = PIL.open(image_buffer)
+    buffer = StringIO()
+    img.save(buffer, format='jpeg')
+    res = buffer.getvalue()
+    print("converted non jpeg:", path)
+  else:
+    res = image_buffer.read()
+  return res
+
 def _convert_to_example(pid, path, ids):
 
   ids_str = []
@@ -59,7 +76,7 @@ def _convert_to_example(pid, path, ids):
     tokens = [str(i) for i in tokens]
     ids_str.append(','.join([str(i) for i in tokens]))
 
-  image_buffer = tf.gfile.FastGFile(path, 'r').read()
+  image_buffer = _ensure_jpeg(path)
   example = tf.train.Example(
       features=tf.train.Features(feature={
       'image/coco-id': _int64_feature(pid),
