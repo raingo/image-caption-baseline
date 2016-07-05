@@ -66,9 +66,13 @@ def main():
 
     tf.get_default_graph().finalize()
 
+    if osp.exists(ckpt_path):
+      saver.restore(sess, ckpt_path)
+
+    start = global_step.eval(session=sess)
     max_iters = 8000 * 20
 
-    for i in range(max_iters):
+    for i in range(start, max_iters):
       if i % 1000 == 0:
         saver.save(sess, ckpt_path, write_meta_graph=False)
         samples_ = sess.run([samples])[0]
