@@ -56,13 +56,15 @@ def main():
         zip(clipped_gradients, params), global_step=global_step)
 
     # Create a saver.
-    saver = tf.train.Saver(tf.all_variables())
+    saver = tf.train.Saver(tf.all_variables(), write_meta_graph=False)
 
     init_op = tf.initialize_all_variables()
     sess.run(init_op)
 
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+
+    tf.get_default_graph().finalize()
 
     max_iters = 8000 * 20
 
