@@ -14,8 +14,8 @@ import tensorflow as tf
 from compile_data import MAX_SEQ_LEN
 from gen_vocab import PAD
 
-IM_S = 255
-CNN_S = 229
+IM_S = 320
+CNN_S = 299
 
 def _parse_example_proto(example_serialized):
   # parse record
