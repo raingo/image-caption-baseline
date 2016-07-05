@@ -12,7 +12,7 @@ import sys
 import os.path as osp
 
 import tensorflow as tf
-from gen_vocab import PAD, load_vocab
+from gen_vocab import PAD, load_vocab, BOS, EOS
 from compile_data import MAX_SEQ_LEN
 from coco_inputs import inputs
 
@@ -70,15 +70,15 @@ def lm_loss(text, num_symbols, cond):
   xent_time_axis = tf.reduce_sum(xent_masked, 1) / seq_len
   return tf.reduce_mean(xent_time_axis)
 
-def build_sampler(num_symbols, cond):
-  batch_size = tf.shape(cond)[0]
-  text = tf.zeros(batch_size, tf.int32)
+def build_sampler(num_symbols, cond, batch_size):
+  text = tf.constant(BOS, shape=[batch_size, 1])
 
   texts = []
   for i in range(MAX_SEQ_LEN):
     logits, cond = build_lm(text, num_symbols, cond)
     text = tf.argmax(logits, 1)
     texts.append(text)
+    text = tf.expand_dims(text, 1)
 
   # return batch_size * MAX_SEQ_LEN
   return tf.transpose(tf.pack(texts))
@@ -86,13 +86,20 @@ def build_sampler(num_symbols, cond):
 def main():
   data_dir = sys.argv[1]
   vocab_path = sys.argv[2]
-  num_symbols = len(load_vocab(vocab_path)[0])
+  _, i2w = load_vocab(vocab_path)
+  num_symbols = len(i2w)
   print('num_symbols:', num_symbols)
 
   with tf.Graph().as_default():
     sess = tf.Session()
     _, captions = inputs(data_dir, True, 10)
-    loss = lm_loss(captions, num_symbols, None)
+    with tf.variable_scope("lm"):
+      loss = lm_loss(captions, num_symbols, None)
+
+    with tf.variable_scope("lm", reuse=True):
+      batch_size = 10
+      cond = tf.random_normal([batch_size, RNN_SIZE])
+      samples = build_sampler(num_symbols, cond, batch_size)
 
     params = tf.trainable_variables()
     opt = tf.train.AdamOptimizer(LEARNING_RATE)
@@ -111,8 +118,19 @@ def main():
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-    while True:
-      print(sess.run([train_op, loss])[1])
+    for i in range(10000):
+      if i % 100 == 0:
+        samples_ = sess.run([samples])[0]
+        print("samples at iteration", i)
+        for sample in samples_:
+          tokens = []
+          for ii in sample:
+            if ii == EOS:
+              break
+            tokens.append(i2w[ii])
+          print(" ", ' '.join(tokens))
+
+      print(i, sess.run([train_op, loss])[1])
 
   pass
 
