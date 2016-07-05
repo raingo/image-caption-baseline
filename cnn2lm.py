@@ -58,8 +58,6 @@ def _cnn_sampler(images, num_symbols, batch_size, paths_):
 
       mask = np.logical_or(mask, text == EOS)
       if mask.all():
-        if step > 20:
-          print("Long step encounted:", step)
         break
 
     texts = np.concatenate(texts, axis=1)
