@@ -46,10 +46,13 @@ def main():
   vocab = Counter()
   for line in sys.stdin:
     fields = line.strip().split('\t')
+    if len(fields) < 3:
+      print(line.strip())
+      continue
     vocab.update(tokenize(fields[2]))
   with open(osp.join(save_dir, 'vocab'), 'w') as writer:
     for token in SP_TOKENS:
-      print(token, 0, file=writer)
+      print(token, 100000000, file=writer)
     for w, n in vocab.most_common():
       print(w, n, file=writer)
   pass
