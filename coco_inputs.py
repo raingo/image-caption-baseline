@@ -26,6 +26,7 @@ def _parse_example_proto(example_serialized):
       'image/encoded': tf.FixedLenFeature([], dtype=tf.string),
       'image/coco-id': tf.FixedLenFeature([], dtype=tf.int64),
       'caption': tf.VarLenFeature(dtype=tf.string),
+      'image/path': tf.FixedLenFeature([], dtype=tf.string),
   }
 
   features = tf.parse_single_example(example_serialized, feature_map)
@@ -35,22 +36,24 @@ def _parse_example_proto(example_serialized):
   # [0,255) --> [0,1)
   image = tf.image.convert_image_dtype(image, dtype=tf.float32)
 
+  image_path = features['image/path']
+
   caption = tf.sparse_tensor_to_dense(features['caption'], default_value=".")
   caption = tf.random_shuffle(caption)[0]
   record_defaults = [[PAD]] * MAX_SEQ_LEN
   caption_tids = tf.decode_csv(caption, record_defaults)
   caption_tids = tf.pack(caption_tids)
 
-  return image, caption_tids
+  return image, caption_tids, image_path
 
 def inputs(tf_dir, is_train, batch_size):
-  image, caption_tids = records(tf_dir)
+  image, caption_tids, image_path = records(tf_dir)
 
   reshaped_image = tf.image.resize_images(image, IM_S, IM_S)
 
   if is_train:
     distorted_image = tf.random_crop(reshaped_image, [CNN_S, CNN_S, 3])
-    distorted_image = tf.image.random_brightness(distorted_image, max_delta=63)
+    distorted_image = tf.image.random_brightness(distorted_image, max_delta=32./255.)
     distorted_image = tf.image.random_contrast(distorted_image, lower=0.2, upper=1.8)
     distorted_image = tf.clip_by_value(distorted_image, 0.0, 1.0)
   else:
@@ -65,7 +68,7 @@ def inputs(tf_dir, is_train, batch_size):
   num_preprocess_threads = 4
   min_queue_examples = 20
 
-  outputs = [image, caption_tids]
+  outputs = [image, caption_tids, image_path]
 
   return tf.train.shuffle_batch(
       outputs,
@@ -90,7 +93,7 @@ def main():
   _, i2w = load_vocab(sys.argv[2])
   with tf.Graph().as_default():
     sess = tf.Session()
-    image, caption = test_func(sys.argv[1])
+    image, caption, _ = test_func(sys.argv[1])
 
     init_op = tf.initialize_all_variables()
     sess.run(init_op)

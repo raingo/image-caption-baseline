@@ -35,7 +35,7 @@ def main():
   print('num_symbols:', num_symbols)
   with tf.Graph().as_default():
     sess = tf.Session()
-    images, captions = inputs(data_dir, True, batch_size)
+    images, captions, _ = inputs(data_dir, True, batch_size)
 
     with tf.variable_scope("im2txt"):
       loss = image2text(images, captions, num_symbols)

@@ -92,7 +92,7 @@ def main():
 
   with tf.Graph().as_default():
     sess = tf.Session()
-    _, captions = inputs(data_dir, True, 10)
+    captions = inputs(data_dir, True, 10)[1]
     with tf.variable_scope("lm"):
       loss = lm_loss(captions, num_symbols, None)
 

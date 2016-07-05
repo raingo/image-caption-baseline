@@ -63,6 +63,7 @@ def _convert_to_example(pid, path, ids):
   example = tf.train.Example(
       features=tf.train.Features(feature={
       'image/coco-id': _int64_feature(pid),
+      'image/path': _bytes_feature(path),
       'caption': _bytes_feature(ids_str),
       'image/encoded': _bytes_feature(image_buffer)}))
 
