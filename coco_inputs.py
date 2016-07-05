@@ -32,7 +32,15 @@ def _parse_example_proto(example_serialized):
   features = tf.parse_single_example(example_serialized, feature_map)
 
   cocoid = features['image/coco-id']
-  image = tf.image.decode_jpeg(features['image/encoded'], channels=3)
+  image = tf.image.decode_jpeg(
+      features['image/encoded'],
+      channels=3,
+      try_recover_truncated=True)
+  # the image COCO_train2014_000000167126.jpg was corrupted
+  # replaced that image in my train2014/ directory
+  # but do not want to re encode everything, so just try_recover_truncated
+  # which is just part of the image
+
   # [0,255) --> [0,1)
   image = tf.image.convert_image_dtype(image, dtype=tf.float32)
 
