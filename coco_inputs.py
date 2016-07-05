@@ -12,7 +12,7 @@ import os.path as osp
 import tensorflow as tf
 
 from compile_data import MAX_SEQ_LEN
-from gen_vocab import PAD
+from gen_vocab import PAD, load_vocab, print_text
 
 IM_S = 320
 CNN_S = 299
@@ -87,6 +87,7 @@ def main():
   #test_func = records
   #test_func = lambda x: inputs(x, True, 10)
   test_func = lambda x: inputs(x, False, 10)
+  _, i2w = load_vocab(sys.argv[2])
   with tf.Graph().as_default():
     sess = tf.Session()
     image, caption = test_func(sys.argv[1])
@@ -100,6 +101,7 @@ def main():
     while True:
       outputs = sess.run([image, caption])
       print(outputs[1].shape, outputs[0].shape)
+      print_text(outputs[1], i2w)
 
   pass
 

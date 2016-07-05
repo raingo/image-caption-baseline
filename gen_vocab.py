@@ -40,6 +40,16 @@ def load_vocab(vocab_path, min_freq = 5):
   w2i= {w:idx for idx, w in enumerate(i2w)}
   return w2i, i2w
 
+def print_text(ids_np, i2w):
+  for sample in ids_np:
+    tokens = []
+    for ii in sample:
+      if ii == EOS:
+        break
+      tokens.append(i2w[ii])
+    print(" ", ' '.join(tokens))
+
+
 def main():
   save_dir = sys.argv[1]
 

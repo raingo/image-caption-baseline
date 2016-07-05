@@ -12,7 +12,7 @@ import os.path as osp
 import tensorflow as tf
 from lm import lm_loss, build_sampler, MAX_GRADIENT_NORM
 from cnn import encode_image
-from gen_vocab import load_vocab, EOS
+from gen_vocab import load_vocab, EOS, print_text
 from coco_inputs import inputs
 from time import gmtime, strftime
 
@@ -73,13 +73,7 @@ def main():
         saver.save(sess, ckpt_path, write_meta_graph=False)
         samples_ = sess.run([samples])[0]
         print("samples at iteration", i)
-        for sample in samples_:
-          tokens = []
-          for ii in sample:
-            if ii == EOS:
-              break
-            tokens.append(i2w[ii])
-          print(" ", ' '.join(tokens))
+        print_text(samples_, i2w)
 
       _loss = sess.run([train_op, loss])[1]
 
