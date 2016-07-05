@@ -107,6 +107,8 @@ def main():
     for line in reader:
       fields = line.strip().split('\t')
       fields[1] = osp.join(image_dir, fields[1])
+      if not osp.exists(fields[1]):
+        continue
       data[(fields[0], fields[1])].append(fields[2])
       path2id[fields[1]] = fields[0]
 
