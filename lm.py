@@ -17,7 +17,7 @@ from compile_data import MAX_SEQ_LEN
 from coco_inputs import inputs
 
 RNN_SIZE = 500
-LEARNING_RATE = 1.e-2
+LEARNING_RATE = 1e-2
 MAX_GRADIENT_NORM = 5.
 
 def _seq_len(data):
@@ -44,7 +44,7 @@ def build_lm(text_inputs, num_symbols, cond):
     b = tf.get_variable("proj_b", [num_symbols])
 
     output = tf.reshape(output, [-1, RNN_SIZE])
-    text_outputs = tf.batch_matmul(output, w)
+    text_outputs = tf.matmul(output, w)
     text_outputs += b
 
   return text_outputs, state
@@ -91,11 +91,11 @@ def main():
 
   with tf.Graph().as_default():
     sess = tf.Session()
-    captions = inputs(data_dir, True, 10)
+    _, captions = inputs(data_dir, True, 10)
     loss = lm_loss(captions, num_symbols, None)
 
     params = tf.trainable_variables()
-    opt = tf.train.GradientDescentOptimizer(LEARNING_RATE)
+    opt = tf.train.AdamOptimizer(LEARNING_RATE)
 
     gradients = tf.gradients(loss, params)
     clipped_gradients, norm = tf.clip_by_global_norm(gradients,

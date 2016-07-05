@@ -65,8 +65,7 @@ def inputs(tf_dir, is_train, batch_size):
   num_preprocess_threads = 4
   min_queue_examples = 20
 
-  #outputs = [image, caption_tids]
-  outputs = [caption_tids]
+  outputs = [image, caption_tids]
 
   return tf.train.shuffle_batch(
       outputs,
