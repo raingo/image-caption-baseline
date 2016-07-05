@@ -75,6 +75,9 @@ def _process_threads(tid, num_threads, data, save_dir, w2i, name='tf'):
       output_file = osp.join(save_dir, '%s-t%02d-s%05d' % (name, tid, cnt/NUM_PER_SHARDS))
       writer = tf.python_io.TFRecordWriter(output_file)
 
+      if tid == 0:
+        print(cnt, tid, idx, len(data))
+
     fields = data[idx]
     image_id = int(fields[0])
     image_path = fields[1]
@@ -91,6 +94,16 @@ def main():
   vocab_path = sys.argv[2]
   image_dir = sys.argv[3]
 
+  valid_path = osp.join(osp.dirname(tsv_path), 'checks.valid')
+
+  valid = set()
+  if osp.exists(valid_path):
+    with open(valid_path) as reader:
+      for line in reader:
+        valid.add(line.strip())
+
+  print("#valid:", len(valid))
+
   save_dir = tsv_path + '.tf'
   import shutil
   if osp.exists(save_dir):
@@ -106,6 +119,11 @@ def main():
   with open(tsv_path) as reader:
     for line in reader:
       fields = line.strip().split('\t')
+      name = osp.basename(fields[1])
+      if len(valid) > 0 and name not in valid:
+        print("Hit")
+        continue
+
       fields[1] = osp.join(image_dir, fields[1])
       if not osp.exists(fields[1]):
         continue
