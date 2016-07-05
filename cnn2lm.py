@@ -95,7 +95,7 @@ def main():
       images, captions, coco_ids = inputs(data_dir,
           do_train,
           batch_size,
-          None if do_train else 2)
+          None if do_train else 1)
 
     with tf.variable_scope("im2txt"):
       loss = image2text(images, captions, num_symbols)
