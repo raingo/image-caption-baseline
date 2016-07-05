@@ -30,11 +30,13 @@ def tokenize(sent):
     tokens.pop()
   return tokens
 
-def load_vocab(vocab_path):
+def load_vocab(vocab_path, min_freq = 5):
   i2w = []
   with open(vocab_path) as reader:
     for line in reader:
-      i2w.append(line.split()[0])
+      fields = line.strip().split()
+      if int(fields[1]) > min_freq:
+        i2w.append(fields[0])
   w2i= {w:idx for idx, w in enumerate(i2w)}
   return w2i, i2w
 

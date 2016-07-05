@@ -21,7 +21,7 @@ import sys
 import os.path as osp
 import os
 
-from gen_vocab import load_vocab, tokenize, PAD, BOS, EOS
+from gen_vocab import load_vocab, tokenize, PAD, BOS, EOS, UNK
 import random
 import tensorflow as tf
 import threading
@@ -80,7 +80,7 @@ def _process_threads(tid, num_threads, data, save_dir, w2i, name='tf'):
     image_path = fields[1]
     ids = []
     for f in fields[2]:
-      ids.append([w2i[w] for w in tokenize(f)])
+      ids.append([w2i[w] if w in w2i else UNK for w in tokenize(f)])
 
     example = _convert_to_example(image_id, image_path, ids)
     writer.write(example.SerializeToString())
