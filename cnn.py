@@ -69,7 +69,7 @@ def main():
 
     while True:
       img_enc0_, img_enc1_, img_path_, image_ = sess.run([img_enc0, img_enc1, image_path, image])
-      assert(image_.max()>-1, "got empty image. check range of the distortion")
+      assert image_.max() > -1, "got empty image. check range of the distortion"
       print(img_path_)
       print(img_enc0_.shape, img_enc1_.shape)
       print(np.abs(img_enc0_ - img_enc1_).max(), img_enc0_.max(), img_enc0_.min())

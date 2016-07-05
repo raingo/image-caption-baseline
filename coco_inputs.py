@@ -26,7 +26,7 @@ def _parse_example_proto(example_serialized):
       'image/encoded': tf.FixedLenFeature([], dtype=tf.string),
       'image/coco-id': tf.FixedLenFeature([], dtype=tf.int64),
       'caption': tf.VarLenFeature(dtype=tf.string),
-      'image/path': tf.FixedLenFeature([], dtype=tf.string),
+      # 'image/path': tf.FixedLenFeature([], dtype=tf.string),
   }
 
   features = tf.parse_single_example(example_serialized, feature_map)
@@ -36,7 +36,7 @@ def _parse_example_proto(example_serialized):
   # [0,255) --> [0,1)
   image = tf.image.convert_image_dtype(image, dtype=tf.float32)
 
-  image_path = features['image/path']
+  #image_path = features['image/path']
 
   caption = tf.sparse_tensor_to_dense(features['caption'], default_value=".")
   caption = tf.random_shuffle(caption)[0]
@@ -44,10 +44,10 @@ def _parse_example_proto(example_serialized):
   caption_tids = tf.decode_csv(caption, record_defaults)
   caption_tids = tf.pack(caption_tids)
 
-  return image, caption_tids, image_path
+  return image, caption_tids #, image_path
 
 def inputs(tf_dir, is_train, batch_size):
-  image, caption_tids, image_path = records(tf_dir)
+  image, caption_tids = records(tf_dir)
 
   reshaped_image = tf.image.resize_images(image, IM_S, IM_S)
 
@@ -68,7 +68,7 @@ def inputs(tf_dir, is_train, batch_size):
   num_preprocess_threads = 4
   min_queue_examples = 20
 
-  outputs = [image, caption_tids, image_path]
+  outputs = [image, caption_tids]
 
   return tf.train.shuffle_batch(
       outputs,
