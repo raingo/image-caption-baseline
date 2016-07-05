@@ -23,6 +23,8 @@ def image2text(images, captions, num_symbols):
 def main():
   data_dir = sys.argv[1]
   vocab_path = sys.argv[2]
+  ckpt_path = sys.argv[3]
+
   _, i2w = load_vocab(vocab_path)
   num_symbols = len(i2w)
   print('num_symbols:', num_symbols)
@@ -49,6 +51,9 @@ def main():
     train_op = opt.apply_gradients(
         zip(clipped_gradients, params), global_step=global_step)
 
+    # Create a saver.
+    saver = tf.train.Saver(tf.all_variables())
+
     init_op = tf.initialize_all_variables()
     sess.run(init_op)
 
@@ -57,6 +62,7 @@ def main():
 
     for i in range(10000):
       if i % 100 == 0:
+        saver.save(sess, ckpt_path)
         samples_ = sess.run([samples])[0]
         print("samples at iteration", i)
         for sample in samples_:
@@ -68,11 +74,6 @@ def main():
           print(" ", ' '.join(tokens))
 
       print(i, sess.run([train_op, loss])[1])
-
-
-
-
-  pass
 
 if __name__ == "__main__":
   main()
