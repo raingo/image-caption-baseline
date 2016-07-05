@@ -52,13 +52,13 @@ def _bytes_feature(value):
 
 import imghdr
 from cStringIO import StringIO
-import PIL
+from PIL import Image
 
 def _ensure_jpeg(path):
   image_buffer = tf.gfile.FastGFile(path, 'r')
 
   if imghdr.what(image_buffer) != 'jpeg':
-    img = PIL.open(image_buffer)
+    img = Image.open(image_buffer)
     buffer = StringIO()
     img.save(buffer, format='jpeg')
     res = buffer.getvalue()
