@@ -30,7 +30,7 @@ For the example of `images` directory, the file `images/318937417.jpg` should be
 
 The file `$PATH_DATA_FOLDER/vocab` will be generated
 
-## Compile normalized dataset (tsv files and images) into database
+## Compile tsv files and images into database
 
 `python compile_data.py $PATH_TO_TSV $VOCAB_PATH $IMAGES_DIR`
 
