@@ -1,6 +1,6 @@
 
 
-== Normalize dataset format
+## Normalize dataset format
 
 1. `trainval.tsv` of the format: `image-id \t image-file-name \t sentence`. Note that the different sentences of the same image should be in different lines
 2. `test.tsv` of the same format as `trainval.tsv`
@@ -22,25 +22,25 @@ Here is an example of tsv file. For test.tsv, the sentences can be just single "
 
 For the example of `images` directory, the file `images/318937417.jpg` should be found for the above `tsv` example
 
-== Generate vocabulary
+## Generate vocabulary
 
 `cat *.tsv | python gen-vocab.py $PATH_DATA_FOLDER`
 
 The file `$PATH_DATA_FOLDER/vocab` will be generated
 
-== Compile dataset into database
+## Compile dataset into database
 
 `python compile_data.py $PATH_TO_TSV $VOCAB_PATH $IMAGES_DIR`
 
 The directory `$PATH_TO_TSV.tf` will be generated
 
-== Training
+## Training
 
 `CUDA_VISIBLE_DEIVCES=$gpu python cnn2lm.py $PATH_TO_TRAINVAL_TSV.tf $VOCAB_PATH $MODEL_PATH`
 
 The file `$MODEL_PATH` will be generated per 1000 iterations
 
-== Evaluation
+## Evaluation
 
 `CUDA_VISIBLE_DEIVCES=$gpu python cnn2lm.py $PATH_TO_TEST_TSV.tf $VOCAB_PATH $MODEL_PATH $SENTENCE_SAVE_PATH`
 
