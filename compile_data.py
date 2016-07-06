@@ -113,16 +113,6 @@ def main():
   vocab_path = sys.argv[2]
   image_dir = sys.argv[3]
 
-  valid_path = osp.join(osp.dirname(tsv_path), 'checks.valid')
-
-  valid = set()
-  if osp.exists(valid_path):
-    with open(valid_path) as reader:
-      for line in reader:
-        valid.add(line.strip())
-
-  print("#valid:", len(valid))
-
   save_dir = tsv_path + '.tf'
   import shutil
   if osp.exists(save_dir):
@@ -139,9 +129,6 @@ def main():
     for line in reader:
       fields = line.strip().split('\t')
       name = osp.basename(fields[1])
-      if len(valid) > 0 and name not in valid:
-        print("Hit")
-        continue
 
       fields[1] = osp.join(image_dir, fields[1])
       if not osp.exists(fields[1]):

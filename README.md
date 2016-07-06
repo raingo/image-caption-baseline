@@ -8,7 +8,7 @@
 2. `test.tsv` of the same format as `trainval.tsv`
 3. `images` directory
 
-Here is an example of tsv file. For test.tsv, the sentences can be just single "."
+Here is an example of tsv file. For `test.tsv`, the sentences can be just single "."
 ```
 318937417       318937417.jpg   aa alumni in the making
 178613239       178613239.jpg   aa bathroom final review week
