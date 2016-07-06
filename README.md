@@ -45,6 +45,10 @@ The file `$MODEL_PATH` will be generated per 1000 iterations
 `CUDA_VISIBLE_DEIVCES=$gpu python cnn2lm.py $PATH_TO_TEST_TSV.tf $VOCAB_PATH $MODEL_PATH $SENTENCE_SAVE_PATH`
 
 The file `$SENTENCE_SAVE_PATH-iteration` will be generated of the following format:
+
+`image-id \t generated-caption`
+
+Here are some examples:
 ```
 301065891       the crowd at the end of the race
 7976767557      the <UNK> of the <UNK> <UNK>
