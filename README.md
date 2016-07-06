@@ -1,4 +1,11 @@
 
+## Download inception cnn graph
+
+```
+wget https://storage.googleapis.com/download.tensorflow.org/models/inception_dec_2015.zip
+```
+
+Unzip it, and move the `tensorflow_inception_graph.pb` to ./data/models/graph.pb
 
 ## Normalize dataset format
 
