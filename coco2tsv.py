@@ -1,6 +1,17 @@
 #!/usr/bin/env python
 """
-Code description
+Generate tsv files from the coco dataset
+
+Download the caption annotations from http://mscoco.org/dataset/#download
+
+Assume the following files exists:
+
+```
+annotations/captions_train2014.json
+annotations/captions_val2014.json
+annotations/image_info_test2015.json
+```
+
 """
 from __future__ import absolute_import
 from __future__ import division

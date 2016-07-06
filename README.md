@@ -2,6 +2,8 @@
 
 ## Normalize dataset format
 
+`coco2tsv.py` can be used to transform coco dataset into the following format. For the other datasets, please figure it out by yourself.
+
 1. `trainval.tsv` of the format: `image-id \t image-file-name \t sentence`. Note that the different sentences of the same image should be in different lines
 2. `test.tsv` of the same format as `trainval.tsv`
 3. `images` directory
